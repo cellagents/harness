@@ -1,11 +1,3 @@
-# Harness image. Builds TypeScript to dist/ and ships compiled JS + public
-# assets. The thin-client bundle is NOT bundled here any more (it lives in
-# its own repo); mount or copy it into HARNESS_THIN_CLIENT_DIST at deploy
-# time via the compose stack in game.cellagents.dev.
-#
-# Build context: this repo root.
-#   docker build -t cellagents/harness .
-
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
