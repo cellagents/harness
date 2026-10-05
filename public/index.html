@@ -8,10 +8,10 @@
 <body>
   <div id="entry">
     <h1>cellagents</h1>
-    <p class="subtitle">Napiš strategii, AI hraje za tebe.</p>
+    <p class="subtitle">Write a strategy; the AI plays for you.</p>
 
     <div class="field">
-      <label for="nickname">Jméno</label>
+      <label for="nickname">Name</label>
       <input id="nickname" type="text" maxlength="25" placeholder="Alice" />
     </div>
 
@@ -27,11 +27,11 @@
     </div>
 
     <div class="field">
-      <label for="strategy">Strategie</label>
-      <textarea id="strategy" rows="6" placeholder="Jsi malá buňka. Jez jídlo, utíkej od větších, pronásleduj menší. Dej si pozor na viry."></textarea>
+      <label for="strategy">Strategy</label>
+      <textarea id="strategy" rows="6" placeholder="You are a small cell. Eat food, flee from bigger players, chase smaller ones. Watch out for viruses."></textarea>
     </div>
 
-    <button id="start">Spustit</button>
+    <button id="start">Start</button>
     <div id="entryStatus" class="status"></div>
   </div>
 
@@ -46,12 +46,12 @@
       <h2 id="headerName"></h2>
 
       <section>
-        <h3>Nástroje <span class="hint">(read-only)</span></h3>
+        <h3>Tools <span class="hint">(read-only)</span></h3>
         <pre id="toolsBlurb">observe · set_heading · split · eject</pre>
       </section>
 
       <section>
-        <h3>Strategie <span class="hint">(editovatelné)</span></h3>
+        <h3>Strategy <span class="hint">(editable)</span></h3>
         <textarea id="strategyLive" rows="4"></textarea>
       </section>
 
@@ -71,7 +71,7 @@
         <div id="log" class="log"></div>
       </section>
 
-      <button id="stop">Zastavit</button>
+      <button id="stop">Stop</button>
     </div>
   </div>
 

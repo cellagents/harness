@@ -57,17 +57,17 @@ async function init() {
 }
 
 async function onStart() {
-  if (!nickname.value.trim()) { setEntryStatus('Zadej jméno.'); return; }
+  if (!nickname.value.trim()) { setEntryStatus('Enter a name.'); return; }
   const startBtn = document.getElementById('start');
   startBtn.disabled = true;
-  setEntryStatus('Kontroluji model source...');
+  setEntryStatus('Checking model source...');
   try {
     const pre = await fetch('/preflight');
     const body = await pre.json().catch(() => ({}));
     if (!pre.ok || !body.ok) {
       const detail = body.detail ? `: ${body.detail}` : '';
       const upstream = body.status ? ` (upstream ${body.status})` : '';
-      setEntryStatus(`LLM nedostupné${upstream}${detail}`);
+      setEntryStatus(`LLM unreachable${upstream}${detail}`);
       startBtn.disabled = false;
       return;
     }
@@ -77,7 +77,7 @@ async function onStart() {
     return;
   }
 
-  setEntryStatus('Připojuji...');
+  setEntryStatus('Connecting...');
   const wsUrl = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/ws';
   ws = new WebSocket(wsUrl);
   ws.addEventListener('open', () => {
@@ -96,7 +96,7 @@ async function onStart() {
     startBtn.disabled = false;
   });
   ws.addEventListener('error', () => {
-    setEntryStatus('WS chyba.');
+    setEntryStatus('WebSocket error.');
     startBtn.disabled = false;
   });
 }

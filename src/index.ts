@@ -35,7 +35,7 @@ async function main() {
   });
 
   // Reachability + auth probe of the model source. The panel calls this on
-  // Spustit before opening a WebSocket, so a misconfigured LLM key or
+  // Start before opening a WebSocket, so a misconfigured LLM key or
   // unreachable gateway surfaces as an inline error instead of a cryptic
   // tick-time failure. 200 means proceed; 503 carries the upstream status
   // and a short detail string.
