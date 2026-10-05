@@ -36,7 +36,11 @@
   </div>
 
   <div id="game" style="display:none">
-    <div id="playerView"></div>
+    <!-- The follow-cam is served by cells-game at /follow?player=<id>.
+         We iframe it in only after the backend confirms the player has
+         joined and we know their id; src is cleared when the agent
+         stops or disconnects so the pane blanks. -->
+    <iframe id="playerView" title="Game view" src="about:blank"></iframe>
 
     <div id="sidebar">
       <h2 id="headerName"></h2>

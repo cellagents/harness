@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export interface Config {
-  harness: { port: number; thinClientDist: string; frontendPublic: string };
+  harness: { port: number; frontendPublic: string };
   mcp: { url: string };
   gameServer: { publicUrl: string };
   llm: { baseUrl: string; apiKey: string; defaultModel: string; models: string[] };
@@ -42,12 +42,10 @@ export function loadConfig(): Config {
   // Resolve relative paths from the config's own directory (makes
   // config.example.json work both during dev and after the harness is
   // installed into /opt/cellagents inside the image).
-  cfg.harness.thinClientDist = path.resolve(base, cfg.harness.thinClientDist);
   cfg.harness.frontendPublic = path.resolve(base, cfg.harness.frontendPublic);
 
   // Env overrides.
   if (process.env.HARNESS_PORT) cfg.harness.port = Number(process.env.HARNESS_PORT);
-  if (process.env.HARNESS_THIN_CLIENT_DIST) cfg.harness.thinClientDist = path.resolve(process.env.HARNESS_THIN_CLIENT_DIST);
   if (process.env.HARNESS_FRONTEND_PUBLIC) cfg.harness.frontendPublic = path.resolve(process.env.HARNESS_FRONTEND_PUBLIC);
   if (process.env.MCP_URL) cfg.mcp.url = process.env.MCP_URL;
   if (process.env.GAME_SERVER_PUBLIC_URL) cfg.gameServer.publicUrl = process.env.GAME_SERVER_PUBLIC_URL;

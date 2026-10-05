@@ -4,19 +4,15 @@ Minimal web harness that runs the LLM agent loop server-side and
 hosts the player panel. The harness manages user sessions and talks
 to an MCP server and a LiteLLM router.
 
-## Relationship with `cellagents` organization
+## `cellagents` project
 
-Cell agents is an educational project where **LLM agents play a
-multiplayer cell-eating game against each other and against human
-players.** This repo is one of five components in that stack: a
-minimal, auditable harness used for demonstration so every user can
-quickly access the same tooling and watch the agent think in real time.
+Cell agents is an educational project where **LLM agents play this
+game against each other and against human players.** This repo is one
+of several key components in that stack; its job is to provide the
+agent-management interface so a player can configure an LLM model to
+play on their behalf.
 
-Full picture, repository map and architecture diagrams:
-→ [**cellagents.dev/developers**](https://cellagents.dev/developers/)
-
-The pedagogical shape of related demo lesson is on
-[**cellagents.dev/classroom**](https://cellagents.dev/classroom/).
+Visit [**cellagents.dev**](https://cellagents.dev/) for overview of the full project.
 
 ## How it works
 
@@ -27,23 +23,26 @@ dispatches every returned tool call over MCP, and logs the whole
 exchange to the browser WebSocket. There is no cross-tick memory by
 design, students see the entire thought.
 
-Four services are involved at runtime:
+Three services are involved at runtime:
 
 - An MCP server (`cells-mcp`), reached over HTTP.
 - An OpenAI-compatible model gateway, usually LiteLLM.
-- A game server (`cells-game` or any `agar.io-clone`), surfaced only
-  via the public URL for the embedded player view.
-- The thin-client bundle, served as static files by this process.
+- A game server (`cells-game`), surfaced via its public URL. The panel
+  iframes `${publicUrl}/follow?player=<id>` once the agent has joined,
+  so the embedded game view is served by cells-game itself; harness
+  does not bundle any game-rendering code.
 
 ## Endpoints
 
 | Path                                     | Role                                                     |
 |------------------------------------------|----------------------------------------------------------|
-| `/`, `/panel`                            | Student panel: name, model dropdown, strategy, tick-rate, event log. |
-| `/panel-config`                          | JSON config the panel reads at load (model list, URLs). |
-| `/spectate`, `/follow`, `/admin`         | Thin-client static modes.                                |
+| `/`, `/panel`                            | Student panel: name, model dropdown, strategy, tick-rate, event log. The embedded game view is iframed from cells-game's `/follow`. |
+| `/panel-config`                          | JSON config the panel reads at load (model list, game server URL). |
 | `/ws`                                    | Panel ↔ backend WebSocket. One agent loop per connection. |
 | `/health`                                | Liveness probe.                                          |
+
+Spectator and admin UIs live on cells-game at `${gameServerUrl}/spectator`
+and `${gameServerUrl}/admin`; harness does not proxy them.
 
 ## Running locally
 
@@ -71,13 +70,9 @@ docker build -t harness .
 docker run --rm -p 5000:5000 \
   -e MCP_URL=http://host.docker.internal:4000/mcp \
   -e LLM_BASE_URL=http://host.docker.internal:8000/v1 \
-  -e HARNESS_THIN_CLIENT_DIST=/path/to/thin-client/dist \
+  -e GAME_SERVER_PUBLIC_URL=http://127.0.0.1:3000 \
   harness
 ```
-
-The thin-client bundle is not built here. Build it in its own repo
-and point `harness.thinClientDist` (or `HARNESS_THIN_CLIENT_DIST`)
-at the resulting `dist/` directory.
 
 ## Configuration
 
@@ -87,7 +82,6 @@ vars take precedence.
 | Config key                | Env var                      | Default                      |
 |---------------------------|------------------------------|------------------------------|
 | `harness.port`            | `HARNESS_PORT`               | `5000`                       |
-| `harness.thinClientDist`  | `HARNESS_THIN_CLIENT_DIST`   | `../thin-client/dist`        |
 | `harness.frontendPublic`  | `HARNESS_FRONTEND_PUBLIC`    | `./public`                   |
 | `mcp.url`                 | `MCP_URL`                    | `http://127.0.0.1:4000/mcp`  |
 | `gameServer.publicUrl`    | `GAME_SERVER_PUBLIC_URL`     | `http://127.0.0.1:3000`      |

@@ -1,10 +1,7 @@
-// Harness panel UI. Two independent connections:
-// 1. WebSocket to the harness backend for commands + agent events.
-// 2. Spectator Socket.IO to the game server for the embedded player view
-//    (opened by the thin-client player module, which is served from the
-//    same origin at /player.js).
-
-import { mountPlayerView } from '/player.js';
+// Harness panel UI. One WebSocket to the harness backend for commands +
+// agent events; the embedded game view is a plain iframe pointed at
+// cells-game's /follow page. The iframe gets a src only after the
+// backend confirms the player joined.
 
 const entry = document.getElementById('entry');
 const game = document.getElementById('game');
@@ -21,10 +18,19 @@ const strategy = document.getElementById('strategy');
 const strategyLive = document.getElementById('strategyLive');
 const nickname = document.getElementById('nickname');
 const headerName = document.getElementById('headerName');
+const playerView = document.getElementById('playerView');
 
 let panelConfig = null;
 let ws = null;
-let viewHandle = null;
+
+function blankPlayerView() {
+  playerView.src = 'about:blank';
+}
+
+function showPlayerView(playerId) {
+  const base = panelConfig.gameServerUrl.replace(/\/$/, '');
+  playerView.src = `${base}/follow?player=${encodeURIComponent(playerId)}`;
+}
 
 init();
 
@@ -67,13 +73,14 @@ function onStart() {
   ws.addEventListener('message', (ev) => handleEvent(JSON.parse(ev.data)));
   ws.addEventListener('close', () => {
     appendLog({ type: 'status', ts: Date.now(), payload: { phase: 'ws-closed' } });
+    blankPlayerView();
   });
   ws.addEventListener('error', () => setEntryStatus('WS chyba.'));
 }
 
 function onStop() {
   if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'stop' }));
-  if (viewHandle) { viewHandle.stop(); viewHandle = null; }
+  blankPlayerView();
   entry.style.display = ''; game.style.display = 'none';
 }
 
@@ -97,12 +104,8 @@ function handleEvent(ev) {
     modelLive.value = modelSel.value;
     tickRateLive.value = tickRate.value;
     tickRateLiveValue.textContent = `${tickRate.value} s`;
-    viewHandle = mountPlayerView({
-      container: document.getElementById('playerView'),
-      playerId: info.playerId,
-      gameServerUrl: panelConfig.gameServerUrl,
-      zoom: 2
-    });
+    if (info.playerId) showPlayerView(info.playerId);
+    else blankPlayerView();
   }
   appendLog(ev);
 }

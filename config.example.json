@@ -1,7 +1,6 @@
 {
   "harness": {
     "port": 5000,
-    "thinClientDist": "../thin-client/dist",
     "frontendPublic": "./public"
   },
   "mcp": {

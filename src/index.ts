@@ -1,5 +1,4 @@
 import http from 'node:http';
-import path from 'node:path';
 import fs from 'node:fs';
 import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -32,10 +31,10 @@ async function main() {
     res.json({ ok: true });
   });
 
-  // Config surface the browser needs on page load (model dropdown, public
-  // game-server URL for the embedded thin client, pre-filled LLM key is
-  // intentionally not here, it is injected via a separate /panel-config
-  // endpoint so we can swap auth strategies later).
+  // Config surface the browser needs on page load (model dropdown and
+  // public game-server URL so the panel can iframe cells-game's /follow).
+  // The LLM API key is intentionally not here; auth strategy can change
+  // without reshaping this response.
   app.get('/panel-config', (_req, res) => {
     res.json({
       models: config.llm.models,
@@ -44,22 +43,14 @@ async function main() {
     });
   });
 
-  // Static mounts: /panel = harness UI, / and other routes = thin client.
-  // We serve the thin client's dist/ (built by apps/thin-client) directly;
-  // in production the Dockerfile COPYs it in.
+  // Harness owns only /panel. The embedded game view is iframed from
+  // cells-game's /follow endpoint; spectator and admin surfaces live on
+  // the game server itself.
   const panelDir = config.harness.frontendPublic;
-  const thinDir = config.harness.thinClientDist;
-
   if (!fs.existsSync(panelDir)) console.warn(`[harness] frontend public dir missing: ${panelDir}`);
-  if (!fs.existsSync(thinDir)) console.warn(`[harness] thin-client dist missing: ${thinDir}; run \`npm run build\` in apps/thin-client`);
 
   app.get('/', (_req, res) => res.redirect('/panel'));
   app.use('/panel', express.static(panelDir));
-  app.use('/spectate', serveSingle(thinDir, 'spectator.html'));
-  app.use('/follow', serveSingle(thinDir, 'follow.html'));
-  app.use('/admin', serveSingle(thinDir, 'admin.html'));
-  // Shared bundle assets (JS, CSS) from the thin-client dist.
-  app.use(express.static(thinDir));
 
   const server = http.createServer(app);
 
@@ -79,14 +70,6 @@ async function main() {
   };
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
-}
-
-function serveSingle(dir: string, file: string) {
-  return (_req: express.Request, res: express.Response) => {
-    const target = path.join(dir, file);
-    if (!fs.existsSync(target)) return res.status(503).send(`${file} not built yet`);
-    res.sendFile(target);
-  };
 }
 
 function attachSession(ws: WebSocket, config: ReturnType<typeof loadConfig> extends Promise<infer R> ? R : ReturnType<typeof loadConfig>): void {
