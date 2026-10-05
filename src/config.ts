@@ -7,7 +7,6 @@ export interface Config {
   mcp: { url: string };
   gameServer: { publicUrl: string };
   llm: { baseUrl: string; apiKey: string; defaultModel: string; models: string[] };
-  cost: { modelTiers: Record<string, number>; tokensPerCostUnit: number };
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,9 +55,5 @@ export function loadConfig(): Config {
   if (process.env.LLM_API_KEY) cfg.llm.apiKey = process.env.LLM_API_KEY;
   if (process.env.LLM_DEFAULT_MODEL) cfg.llm.defaultModel = process.env.LLM_DEFAULT_MODEL;
   if (process.env.LLM_MODELS) cfg.llm.models = process.env.LLM_MODELS.split(',').map(s => s.trim()).filter(Boolean);
-  if (process.env.COST_MODEL_TIERS) {
-    try { cfg.cost.modelTiers = JSON.parse(process.env.COST_MODEL_TIERS); }
-    catch (err) { console.warn('[config] COST_MODEL_TIERS not valid JSON:', (err as Error).message); }
-  }
   return cfg;
 }

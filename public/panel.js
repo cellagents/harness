@@ -10,7 +10,6 @@ const entry = document.getElementById('entry');
 const game = document.getElementById('game');
 const entryStatus = document.getElementById('entryStatus');
 const log = document.getElementById('log');
-const metabolism = document.getElementById('metabolism');
 
 const modelSel = document.getElementById('model');
 const modelLive = document.getElementById('modelLive');
@@ -105,10 +104,6 @@ function handleEvent(ev) {
       zoom: 2
     });
   }
-  if (ev.type === 'heartbeat') {
-    const r = ev.payload.response || {};
-    metabolism.textContent = `cost: ${format(ev.payload.declared)} · applied drain: ${format(r.applied_drain)} · honest: ${format(r.honest_estimate)}`;
-  }
   appendLog(ev);
 }
 
@@ -121,5 +116,4 @@ function appendLog(ev) {
 }
 
 function setEntryStatus(text) { entryStatus.textContent = text; }
-function format(v) { return typeof v === 'number' ? v.toFixed(3) : '—'; }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }

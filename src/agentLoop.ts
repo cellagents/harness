@@ -2,13 +2,8 @@ import type { ChatMessage, ToolSpec } from './llmClient.js';
 import type { Config } from './config.js';
 import type { McpSession, McpToolInfo } from './mcpSession.js';
 import type { LlmClient } from './llmClient.js';
-import { computeCost } from './cost.js';
 
-// Tools the LLM is allowed to call directly. heartbeat is called by the
-// harness itself after each tick, not by the model, which is one of the
-// lesson's enforcement points: a well-behaved harness reports cost honestly
-// without relying on the model to do so.
-const MODEL_TOOLS = new Set(['observe', 'set_heading', 'split', 'eject', 'status']);
+const MODEL_TOOLS = new Set(['observe', 'set_heading', 'split', 'eject']);
 
 export interface AgentConfig {
   model: string;
@@ -23,7 +18,6 @@ export interface AgentEvent {
     | 'tool-call'
     | 'tool-result'
     | 'model-response'
-    | 'heartbeat'
     | 'error'
     | 'status';
   ts: number;
@@ -33,7 +27,7 @@ export interface AgentEvent {
 
 export type AgentEventSink = (ev: AgentEvent) => void;
 
-const SYSTEM_HEADER = `You control a cell in agar.io through a tool interface. Each tick you receive the current scene and must decide what to do. Available tools: observe (read scene), set_heading (choose direction), split, eject (fire mass), status (round phase and leaderboard). You cannot see history across ticks: every call is fresh. Call tools; do not describe actions in text. Keep tool calls purposeful.`;
+const SYSTEM_HEADER = `You control a cell in agar.io through a tool interface. Each tick you receive the current scene and must decide what to do. Available tools: observe (read scene), set_heading (choose direction), split, eject (fire mass). You cannot see history across ticks: every call is fresh. Call tools; do not describe actions in text. Keep tool calls purposeful.`;
 
 export class AgentLoop {
   private tick = 0;
@@ -41,8 +35,7 @@ export class AgentLoop {
   private running = false;
   private closed = false;
   private playerId: string | null = null;
-  private joinInfo: { playerId: string; nickname: string; world: { width: number; height: number }; joinToken: string } | null = null;
-  private lastCost = 0;
+  private joinInfo: { playerId: string; nickname: string; world: { width: number; height: number } } | null = null;
 
   constructor(
     private readonly config: Config,
@@ -97,9 +90,6 @@ export class AgentLoop {
     const myTick = ++this.tick;
     this.emit({ type: 'tick-start', ts: tickStart, tick: myTick, payload: { agent: this.agent } });
 
-    let promptTokens = 0;
-    let responseTokens = 0;
-
     try {
       // Fresh observation every tick. No carried-over history by design.
       const observation = await this.mcp.call('observe', {});
@@ -121,9 +111,6 @@ export class AgentLoop {
         messages,
         tools
       });
-
-      promptTokens = resp.usage?.prompt_tokens ?? 0;
-      responseTokens = resp.usage?.completion_tokens ?? 0;
 
       const msg = resp.choices[0]?.message;
       this.emit({
@@ -171,27 +158,8 @@ export class AgentLoop {
     } catch (err) {
       this.emit({ type: 'error', ts: Date.now(), tick: myTick, payload: { message: (err as Error).message } });
     } finally {
-      // Honest heartbeat regardless of success/failure, so a tick that
-      // called a model still pays its drain. Zero tokens → zero cost.
-      const cost = computeCost(this.config, {
-        model: this.agent.model,
-        promptTokens,
-        responseTokens
-      });
-      this.lastCost = cost;
-      try {
-        const hbRaw = await this.mcp.call('heartbeat', {
-          cost,
-          model: this.agent.model,
-          prompt_tokens: promptTokens
-        });
-        this.emit({ type: 'heartbeat', ts: Date.now(), tick: myTick, payload: { declared: cost, model: this.agent.model, prompt_tokens: promptTokens, response: safeJson(hbRaw) } });
-      } catch (err) {
-        this.emit({ type: 'error', ts: Date.now(), tick: myTick, payload: { message: `heartbeat failed: ${(err as Error).message}` } });
-      }
-
       const elapsed = Date.now() - tickStart;
-      this.emit({ type: 'tick-end', ts: Date.now(), tick: myTick, payload: { durationMs: elapsed, cost: this.lastCost } });
+      this.emit({ type: 'tick-end', ts: Date.now(), tick: myTick, payload: { durationMs: elapsed } });
 
       const nextDelay = Math.max(0, this.agent.tickRateSec * 1000 - elapsed);
       if (!this.closed) this.scheduleNext(nextDelay);

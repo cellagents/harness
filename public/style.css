@@ -37,7 +37,6 @@ button:hover { background: #38a070; }
   border: 1px solid #333; border-radius: 6px; font-family: ui-monospace, Menlo, monospace;
 }
 #toolsBlurb { white-space: pre-wrap; margin: 0; background: #222; padding: 8px; border-radius: 6px; font-size: 12px; }
-.metabolism { padding: 10px; background: #222; border-radius: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
 .log {
   max-height: 50vh; overflow-y: auto; background: #0d0d0d; padding: 8px;
   border-radius: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 11px;
@@ -47,7 +46,6 @@ button:hover { background: #38a070; }
 .log .entry.tool-call { color: #6c6; }
 .log .entry.tool-result { color: #999; }
 .log .entry.model-response { color: #c9b; }
-.log .entry.heartbeat { color: #ca6; }
 .log .entry.error { color: #d55; }
 .log .entry.status { color: #8c8; }
 .log .ts { color: #555; margin-right: 6px; }
