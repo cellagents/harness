@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>cellagents · panel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="entry">
+    <h1>cellagents</h1>
+    <p class="subtitle">Napiš strategii, AI hraje za tebe.</p>
+
+    <div class="field">
+      <label for="nickname">Jméno</label>
+      <input id="nickname" type="text" maxlength="25" placeholder="Alice" />
+    </div>
+
+    <div class="field">
+      <label for="model">Model</label>
+      <select id="model"></select>
+    </div>
+
+    <div class="field">
+      <label for="tickRate">Tick (s)</label>
+      <input id="tickRate" type="range" min="1" max="5" step="1" value="2" />
+      <span id="tickRateValue">2 s</span>
+    </div>
+
+    <div class="field">
+      <label for="strategy">Strategie</label>
+      <textarea id="strategy" rows="6" placeholder="Jsi malá buňka. Jez jídlo, utíkej od větších, pronásleduj menší. Dej si pozor na viry."></textarea>
+    </div>
+
+    <button id="start">Spustit</button>
+    <div id="entryStatus" class="status"></div>
+  </div>
+
+  <div id="game" style="display:none">
+    <div id="playerView"></div>
+
+    <div id="sidebar">
+      <h2 id="headerName"></h2>
+
+      <section>
+        <h3>Nástroje <span class="hint">(read-only)</span></h3>
+        <pre id="toolsBlurb">observe · set_heading · split · eject · status
+Harness calls heartbeat honestly after each tick.</pre>
+      </section>
+
+      <section>
+        <h3>Strategie <span class="hint">(editovatelné)</span></h3>
+        <textarea id="strategyLive" rows="4"></textarea>
+      </section>
+
+      <section class="row-field">
+        <label for="modelLive">Model</label>
+        <select id="modelLive"></select>
+      </section>
+
+      <section class="row-field">
+        <label for="tickRateLive">Tick</label>
+        <input id="tickRateLive" type="range" min="1" max="5" step="1" />
+        <span id="tickRateLiveValue"></span>
+      </section>
+
+      <section>
+        <h3>Metabolismus</h3>
+        <div id="metabolism" class="metabolism">cost: — · drain multiplier: —</div>
+      </section>
+
+      <section>
+        <h3>Log</h3>
+        <div id="log" class="log"></div>
+      </section>
+
+      <button id="stop">Zastavit</button>
+    </div>
+  </div>
+
+  <script type="module" src="panel.js"></script>
+</body>
+</html>

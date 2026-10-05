@@ -1,0 +1,53 @@
+html, body { margin: 0; padding: 0; background: #111; color: #eee; font-family: system-ui, sans-serif; height: 100%; }
+h1, h2, h3 { font-weight: 600; }
+.hint { font-size: 11px; color: #888; font-weight: 400; }
+
+#entry {
+  max-width: 520px; margin: 60px auto; padding: 32px; background: #1a1a1a;
+  border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+#entry h1 { margin-top: 0; }
+#entry .subtitle { color: #aaa; margin-top: -8px; }
+.field { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 13px; color: #bbb; }
+.field input[type=text], .field textarea, .field select {
+  padding: 8px 10px; background: #222; color: #eee; border: 1px solid #333;
+  border-radius: 6px; font: inherit;
+}
+.field input[type=range] { width: 100%; }
+.field textarea { font-family: ui-monospace, Menlo, monospace; }
+button {
+  padding: 10px 16px; background: #2a6; color: #fff; border: 0; border-radius: 6px;
+  font: inherit; cursor: pointer;
+}
+button:hover { background: #38a070; }
+.status { margin-top: 12px; min-height: 20px; color: #d55; font-size: 13px; }
+
+#game { display: flex; height: 100vh; }
+#playerView { flex: 1; min-width: 0; background: #000; position: relative; }
+#sidebar { width: 420px; max-width: 42vw; padding: 16px; overflow-y: auto; background: #171717; }
+#sidebar section { margin-bottom: 14px; }
+#sidebar h2 { margin-top: 0; }
+#sidebar h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #ccc; }
+.row-field { display: flex; align-items: center; gap: 10px; }
+.row-field label { font-size: 13px; color: #bbb; min-width: 60px; }
+.row-field select, .row-field input[type=range] { flex: 1; }
+#strategyLive {
+  width: 100%; box-sizing: border-box; padding: 8px; background: #222; color: #eee;
+  border: 1px solid #333; border-radius: 6px; font-family: ui-monospace, Menlo, monospace;
+}
+#toolsBlurb { white-space: pre-wrap; margin: 0; background: #222; padding: 8px; border-radius: 6px; font-size: 12px; }
+.metabolism { padding: 10px; background: #222; border-radius: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.log {
+  max-height: 50vh; overflow-y: auto; background: #0d0d0d; padding: 8px;
+  border-radius: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 11px;
+}
+.log .entry { padding: 3px 0; border-bottom: 1px solid #1a1a1a; }
+.log .entry.tick-start { color: #78a; }
+.log .entry.tool-call { color: #6c6; }
+.log .entry.tool-result { color: #999; }
+.log .entry.model-response { color: #c9b; }
+.log .entry.heartbeat { color: #ca6; }
+.log .entry.error { color: #d55; }
+.log .entry.status { color: #8c8; }
+.log .ts { color: #555; margin-right: 6px; }
