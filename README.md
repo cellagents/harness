@@ -1,9 +1,8 @@
 # harness
 
-A minimalistic web-based AI agent harness that lets a language model
-play the cells game. The harness manages web-based user sessions,
-maintains connection to the game MCP server and LiteLLM router that
-provides the LLM models.
+Minimal web harness that runs the LLM agent loop server-side and
+hosts the player panel. The harness manages user sessions and talks
+to an MCP server and a LiteLLM router.
 
 ## Relationship with `cellagents` organization
 
