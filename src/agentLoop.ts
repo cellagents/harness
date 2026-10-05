@@ -1,6 +1,7 @@
 import type { ChatMessage, ToolSpec } from './llmClient.js';
 import type { Config } from './config.js';
 import type { McpSession, McpToolInfo } from './mcpSession.js';
+import { GameTerminatedError } from './mcpSession.js';
 import type { LlmClient } from './llmClient.js';
 
 const MODEL_TOOLS = new Set(['observe', 'move_to', 'set_heading', 'stop', 'split', 'eject']);
@@ -125,6 +126,7 @@ export class AgentLoop {
         }
       });
 
+      const terminalCalls: Array<{ name: string; err: GameTerminatedError }> = [];
       for (const call of msg?.tool_calls || []) {
         if (!MODEL_TOOLS.has(call.function.name)) {
           this.emit({
@@ -152,18 +154,41 @@ export class AgentLoop {
           const result = await this.mcp.call(call.function.name, args);
           this.emit({ type: 'tool-result', ts: Date.now(), tick: myTick, payload: { tool: call.function.name, result: safeJson(result) } });
         } catch (err) {
-          this.emit({ type: 'error', ts: Date.now(), tick: myTick, payload: { message: `tool ${call.function.name} failed: ${(err as Error).message}` } });
+          if (err instanceof GameTerminatedError) {
+            terminalCalls.push({ name: call.function.name, err });
+          } else {
+            this.emit({ type: 'error', ts: Date.now(), tick: myTick, payload: { message: `tool ${call.function.name} failed: ${(err as Error).message}` } });
+          }
         }
       }
+      if (terminalCalls.length > 0) {
+        this.handleTermination(myTick, terminalCalls[0].err);
+        return;
+      }
     } catch (err) {
+      if (err instanceof GameTerminatedError) {
+        this.handleTermination(myTick, err);
+        return;
+      }
       this.emit({ type: 'error', ts: Date.now(), tick: myTick, payload: { message: (err as Error).message } });
     } finally {
       const elapsed = Date.now() - tickStart;
       this.emit({ type: 'tick-end', ts: Date.now(), tick: myTick, payload: { durationMs: elapsed } });
 
       const nextDelay = Math.max(0, this.agent.tickRateSec * 1000 - elapsed);
-      if (!this.closed) this.scheduleNext(nextDelay);
+      if (this.running && !this.closed) this.scheduleNext(nextDelay);
     }
+  }
+
+  private handleTermination(myTick: number, err: GameTerminatedError): void {
+    this.running = false;
+    if (this.timer) { clearTimeout(this.timer); this.timer = null; }
+    this.emit({
+      type: 'status',
+      ts: Date.now(),
+      tick: myTick,
+      payload: { phase: 'terminated', kind: err.kind, detail: err.detail }
+    });
   }
 }
 

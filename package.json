@@ -1,6 +1,6 @@
 {
   "name": "@cellagents/harness",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Reference honest harness for cellagents.dev. Hosts the student panel UI and runs the agent loop server-side.",
   "license": "MIT",

@@ -57,3 +57,20 @@ button:hover { background: #38a070; }
 .log .entry.error { color: #d55; }
 .log .entry.status { color: #8c8; }
 .log .ts { color: #555; margin-right: 6px; }
+
+#terminal {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 32px; box-sizing: border-box;
+}
+.terminal-card {
+  max-width: 520px; width: 100%; padding: 32px; background: #1a1a1a;
+  border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  text-align: center;
+}
+.terminal-card h1 { margin-top: 0; }
+.terminal-reason {
+  font-family: ui-monospace, Menlo, monospace;
+  background: #222; padding: 10px; border-radius: 6px;
+  color: #d9a657; margin: 16px 0;
+}
+.terminal-sub { color: #aaa; font-size: 14px; }

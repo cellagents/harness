@@ -5,6 +5,8 @@
 
 const entry = document.getElementById('entry');
 const game = document.getElementById('game');
+const terminal = document.getElementById('terminal');
+const terminalReason = document.getElementById('terminalReason');
 const entryStatus = document.getElementById('entryStatus');
 const log = document.getElementById('log');
 
@@ -54,6 +56,7 @@ async function init() {
 
   document.getElementById('start').addEventListener('click', onStart);
   document.getElementById('stop').addEventListener('click', onStop);
+  document.getElementById('backToLobby').addEventListener('click', backToLobby);
   strategyLive.addEventListener('change', pushUpdate);
   modelLive.addEventListener('change', pushUpdate);
   tickRateLive.addEventListener('change', pushUpdate);
@@ -107,7 +110,32 @@ async function onStart() {
 function onStop() {
   if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'stop' }));
   blankPlayerView();
-  entry.style.display = ''; game.style.display = 'none';
+  entry.style.display = ''; game.style.display = 'none'; terminal.style.display = 'none';
+}
+
+function showTerminal(kind, detail) {
+  const label = {
+    kicked: 'You were kicked by the admin',
+    eaten: 'You were eaten',
+    disconnected: 'Lost connection to the game',
+    quit: 'You left the game',
+    unknown: 'Game session ended'
+  }[kind] || 'Game session ended';
+  terminalReason.textContent = detail ? `${label}: ${detail}` : label;
+  blankPlayerView();
+  entry.style.display = 'none';
+  game.style.display = 'none';
+  terminal.style.display = 'flex';
+}
+
+function backToLobby() {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'stop' }));
+  if (ws) { try { ws.close(); } catch { /* noop */ } ws = null; }
+  blankPlayerView();
+  terminal.style.display = 'none';
+  game.style.display = 'none';
+  entry.style.display = '';
+  document.getElementById('start').disabled = false;
 }
 
 function pushUpdate() {
@@ -124,6 +152,7 @@ function handleEvent(ev) {
   if (ev.type === 'status' && ev.payload?.phase === 'joined') {
     const info = ev.payload;
     entry.style.display = 'none';
+    terminal.style.display = 'none';
     game.style.display = '';
     headerName.textContent = info.nickname || 'player';
     strategyLive.value = strategy.value;
@@ -132,6 +161,9 @@ function handleEvent(ev) {
     tickRateLiveValue.textContent = `${tickRate.value} s`;
     if (info.playerId) showPlayerView(info.playerId);
     else blankPlayerView();
+  }
+  if (ev.type === 'status' && ev.payload?.phase === 'terminated') {
+    showTerminal(ev.payload.kind, ev.payload.detail);
   }
   appendLog(ev);
 }
