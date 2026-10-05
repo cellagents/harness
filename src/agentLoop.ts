@@ -3,7 +3,7 @@ import type { Config } from './config.js';
 import type { McpSession, McpToolInfo } from './mcpSession.js';
 import type { LlmClient } from './llmClient.js';
 
-const MODEL_TOOLS = new Set(['observe', 'set_heading', 'split', 'eject']);
+const MODEL_TOOLS = new Set(['observe', 'move_to', 'set_heading', 'stop', 'split', 'eject']);
 
 export interface AgentConfig {
   model: string;
@@ -27,7 +27,7 @@ export interface AgentEvent {
 
 export type AgentEventSink = (ev: AgentEvent) => void;
 
-const SYSTEM_HEADER = `You control a cell in agar.io through a tool interface. Each tick you receive the current scene and must decide what to do. Available tools: observe (read scene), set_heading (choose direction), split, eject (fire mass). You cannot see history across ticks: every call is fresh. Call tools; do not describe actions in text. Keep tool calls purposeful.`;
+const SYSTEM_HEADER = `You control a cell in a multiplayer agar-like game through a tool interface. Each tick you receive the current scene and must decide what to do. Available tools: observe (read scene), move_to (head to a world coordinate), set_heading (go a direction forever), stop (halt movement), split, eject (fire mass). Movement is persistent: once you call move_to or set_heading the MCP keeps steering until arrival or until you issue another movement tool. You cannot see history across ticks: every call is fresh. Call tools; do not describe actions in text. Keep tool calls purposeful.`;
 
 export class AgentLoop {
   private tick = 0;
