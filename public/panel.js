@@ -29,7 +29,10 @@ function blankPlayerView() {
 
 function showPlayerView(playerId) {
   const base = panelConfig.gameServerUrl.replace(/\/$/, '');
-  playerView.src = `${base}/follow?player=${encodeURIComponent(playerId)}`;
+  // `managed=1` tells the /follow page it is embedded: hides its own
+  // exit button and disables ESC-to-exit so the student can't yank the
+  // iframe out from under the harness panel.
+  playerView.src = `${base}/follow?player=${encodeURIComponent(playerId)}&managed=1`;
 }
 
 init();
