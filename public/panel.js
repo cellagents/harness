@@ -56,8 +56,27 @@ async function init() {
   tickRateLive.addEventListener('change', pushUpdate);
 }
 
-function onStart() {
+async function onStart() {
   if (!nickname.value.trim()) { setEntryStatus('Zadej jméno.'); return; }
+  const startBtn = document.getElementById('start');
+  startBtn.disabled = true;
+  setEntryStatus('Kontroluji model source...');
+  try {
+    const pre = await fetch('/preflight');
+    const body = await pre.json().catch(() => ({}));
+    if (!pre.ok || !body.ok) {
+      const detail = body.detail ? `: ${body.detail}` : '';
+      const upstream = body.status ? ` (upstream ${body.status})` : '';
+      setEntryStatus(`LLM nedostupné${upstream}${detail}`);
+      startBtn.disabled = false;
+      return;
+    }
+  } catch (err) {
+    setEntryStatus(`Preflight error: ${err.message}`);
+    startBtn.disabled = false;
+    return;
+  }
+
   setEntryStatus('Připojuji...');
   const wsUrl = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/ws';
   ws = new WebSocket(wsUrl);
@@ -74,8 +93,12 @@ function onStart() {
   ws.addEventListener('close', () => {
     appendLog({ type: 'status', ts: Date.now(), payload: { phase: 'ws-closed' } });
     blankPlayerView();
+    startBtn.disabled = false;
   });
-  ws.addEventListener('error', () => setEntryStatus('WS chyba.'));
+  ws.addEventListener('error', () => {
+    setEntryStatus('WS chyba.');
+    startBtn.disabled = false;
+  });
 }
 
 function onStop() {

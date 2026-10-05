@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 import { loadConfig } from './config.js';
 import { McpSession } from './mcpSession.js';
-import { LlmClient } from './llmClient.js';
+import { LlmClient, PreflightResult } from './llmClient.js';
 import { AgentLoop, AgentEvent } from './agentLoop.js';
 
 // Browser → backend command envelope.
@@ -27,8 +27,22 @@ async function main() {
   const app = express();
   app.use(express.json());
 
+  // Shared LLM client for stateless probes. Session agents build their own.
+  const preflightClient = new LlmClient(config);
+
   app.get('/health', (_req, res) => {
     res.json({ ok: true });
+  });
+
+  // Reachability + auth probe of the model source. The panel calls this on
+  // Spustit before opening a WebSocket, so a misconfigured LLM key or
+  // unreachable gateway surfaces as an inline error instead of a cryptic
+  // tick-time failure. 200 means proceed; 503 carries the upstream status
+  // and a short detail string.
+  app.get('/preflight', async (_req, res) => {
+    const result: PreflightResult = await preflightClient.preflight();
+    if (result.ok) res.json(result);
+    else res.status(503).json(result);
   });
 
   // Config surface the browser needs on page load (model dropdown and
