@@ -51,7 +51,6 @@ default the harness looks at `127.0.0.1:4000/mcp` and `127.0.0.1:8000/v1`.
 
 ```bash
 npm install
-npm run build
 cp config.example.json config.json       # edit URLs and models
 npm start
 # http://127.0.0.1:5000/panel
